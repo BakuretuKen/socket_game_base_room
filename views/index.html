@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Base - ゲームルーム管理</title>
+    <link rel="stylesheet" href="/dist/simple.min.css">
+    <meta name="robots" content="noindex,nofollow">
+    <style>
+        /* PC表示でも要素を縦並びにする */
+        main {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 100%;
+        }
+
+        section {
+            width: 100% !important;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* フォーム要素を縦並びに */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* ボタンの幅を調整 */
+        input[type="submit"] {
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        /* 見出しのマージンを調整 */
+        h2 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ヘッダーとフッターのマージンを調整 */
+        header {
+            margin-bottom: 1rem;
+        }
+
+        footer {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>GAME BASE</h1>
+    </header>
+
+    <main>
+        <section>
+            <h3>ゲームを作成</h3>
+            <form action="/new" method="post">
+                <label for="newUserName">ユーザー名</label>
+                <input type="text" id="newUserName" name="userName" placeholder="ユーザー名を入力" required maxlength="8">
+                <input type="submit" value="ゲーム作成">
+            </form>
+        </section>
+
+        <section>
+            <h3>ゲームに参加</h3>
+            <form action="/join" method="post">
+                <label for="gameCode">ゲームコード</label>
+                <input type="text" id="gameCode" name="gameCode" placeholder="ゲームコードを入力" required maxlength="8">
+
+                <label for="joinUserName">ユーザー名</label>
+                <input type="text" id="joinUserName" name="userName" placeholder="ユーザー名を入力" required maxlength="8">
+
+                <input type="submit" value="ゲーム参加">
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p><small>Game Base System</small></p>
+    </footer>
+</body>
+</html>

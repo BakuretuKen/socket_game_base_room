@@ -1,0 +1,15 @@
+.DS_Store
+/node_modules
+/src/vendor
+/.idea
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+.env
+/src/composer.phar
+/dist
+/tmp
+/data
+/src/bootstrap.php
+/CLAUDE.md
