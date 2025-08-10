@@ -7,15 +7,18 @@ declare global {
     interface MakeResponse {
         status: boolean;
         gameCode: string;
+        socketId: string;
     }
 
     interface JoinResponse {
         status: boolean;
         userName: string;
+        socketId: string;
     }
 
     interface RecvMessage {
         status: boolean;
+        socketId: string;
         action?: string;
         [key: string]: any; // 任意のデータ
     }

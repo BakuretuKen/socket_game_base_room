@@ -100,17 +100,25 @@ io.on('connection', (socket) => {
     // @params {}
     // @return 送信者: make { "status": true, "gameCode": "ゲームCODE" }
     socket.on('make', () => {
-        // ランダムな数字8桁作成
-        const gameCode = Math.floor(Math.random() * 1000000).toString().padStart(8, '0');
-        // ランダムな英数字8桁作成
-        // const gameCode = Math.random().toString(36).substring(2, 10).replace(/[1l]/g, '7') // 1とlを7に置換
-        // Socket Room 入室
-        socket.join(gameCode);
-        roomList[gameCode] = Math.floor((new Date()).getTime() / 1000);
-        // 送信元への通知
-        const response: MakeResponse = { "status": true, "gameCode": gameCode };
-        io.to(socket.id).emit('make', response);
-        console.log("make: " + gameCode + " by " + socket.id);
+        for (let i = 0; i < 10; i++) {
+            // ランダムな数字8桁作成
+            let gameCode = Math.floor(Math.random() * 1000000).toString().padStart(8, '0');
+            // ランダムな英数字8桁作成
+            // let gameCode = Math.random().toString(36).substring(2, 10).replace(/[1l]/g, '7') // 1とlを7に置換
+            if (typeof roomList[gameCode] === "undefined") {
+                // Socket Room 入室
+                socket.join(gameCode);
+                roomList[gameCode] = Math.floor((new Date()).getTime() / 1000);
+                // 送信元への通知
+                const response: MakeResponse = { "status": true, "gameCode": gameCode, "socketId": socket.id };
+                io.to(socket.id).emit('make', response);
+                console.log("make: " + gameCode + " by " + socket.id);
+                return;
+            }
+        }
+        // エラー通知
+        const errorResponse: MakeResponse = { "status": false, "gameCode": "", "socketId": socket.id };
+        io.to(socket.id).emit('make', errorResponse);
     });
 
     // ゲーム接続
@@ -118,12 +126,12 @@ io.on('connection', (socket) => {
     // @return 全員: join { "status": true, "gameCode": "ゲームCODE", "userName": "ユーザー名" }
     socket.on('join', (arr: JoinSocketRequest) => {
         if (typeof arr["gameCode"] === "undefined" || typeof arr["userName"] === "undefined") {
-            const errorResponse: JoinResponse = { "status": false, "userName": "" };
+            const errorResponse: JoinResponse = { "status": false, "userName": "", "socketId": socket.id };
             io.to(socket.id).emit("join", errorResponse);
             return;
         }
         if (typeof roomList[arr["gameCode"]] === "undefined") {
-            const errorResponse: JoinResponse = { "status": false, "userName": "" };
+            const errorResponse: JoinResponse = { "status": false, "userName": "", "socketId": socket.id };
             io.to(socket.id).emit("join", errorResponse);
             return;
         }
@@ -132,7 +140,7 @@ io.on('connection', (socket) => {
         // Socket Room 入室
         socket.join(gameCode);
         // ROOM全員に通知
-        const masterResponse: JoinResponse = { "status": true, "userName": arr["userName"] };
+        const masterResponse: JoinResponse = { "status": true, "userName": arr["userName"], "socketId": socket.id };
         io.to(gameCode).emit('join', masterResponse);
         console.log("join: " + gameCode + " by " + socket.id);
     });
@@ -142,18 +150,36 @@ io.on('connection', (socket) => {
     // @return 全員: recv　{ "status": true, "action": アクション(オプション), ・・・ }
     socket.on('send', (arr: SendRequest) => {
         if (typeof arr["gameCode"] === "undefined") {
-            const errorResponse: RecvMessage = { "status": false, "action": "GAME CODE ERROR"}
-            io.to(socket.id).emit("send", errorResponse);
+            const errorResponse: RecvMessage = { "status": false, "action": "GAME CODE ERROR", "socketId": socket.id };
+            io.to(socket.id).emit("recv", errorResponse);
             return;
         }
         const gameCode = arr["gameCode"];
 
         arr["status"] = true;
+        arr["socketId"] = socket.id;
         if (typeof arr["action"] !== "undefined") {
             console.log("send: " + arr["action"] + ' by ' + socket.id);
         }
         // ROOM全員に通知
         console.log("send: [" + gameCode + ']', socket.rooms);
         io.to(gameCode).emit('recv', arr);
+    });
+
+    socket.on('send_direct', (arr: SendRequest) => {
+        if (typeof arr["to"] === "undefined") {
+            const errorResponse: RecvMessage = { "status": false, "action": "SOCKET ID ERROR", "socketId": socket.id };
+            io.to(socket.id).emit("recv", errorResponse);
+            return;
+        }
+
+        arr["status"] = true;
+        if (typeof arr["action"] !== "undefined") {
+            console.log("send_direct: " + arr["action"] + ' by ' + socket.id);
+        }
+        // 送信先に通知
+        arr["socketId"] = socket.id;
+        console.log("send_direct: [" + arr["to"] + ']', socket.rooms);
+        io.to(arr["to"]).emit('recv', arr);
     });
 });

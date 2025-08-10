@@ -41,7 +41,10 @@
             <button class="debug" onclick="console.log(players);">players</button>
             <button class="debug" onclick="console.log(playerName);">playerName</button>
             <button class="debug" onclick="console.log(isMaster);">isMaster</button>
-            | <input type="text" id="debugMessage" value="debug" style="height: 30px;"> <button class="debug" onclick="sendMessage({action: 'SEND_DEBUG', message: document.getElementById('debugMessage').value});">send</button>
+            | <input type="text" id="debugMessage" value="debug message" style="height: 30px;"> <button class="debug" onclick="sendMessage({action: 'SEND_DEBUG', message: document.getElementById('debugMessage').value});">send</button>
+            <br />
+            <input type="text" id="debugDirectMessageSocketId"  style="height: 30px;" placeholder="socketId">
+            <button class="debug" onclick="sendDirectMessage(document.getElementById('debugDirectMessageSocketId').value, {action: 'SEND_DIRECT_DEBUG', message: document.getElementById('debugMessage').value});">send_direct</button>
         </div>
     </main>
 

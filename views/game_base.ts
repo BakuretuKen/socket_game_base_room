@@ -9,7 +9,10 @@ const maxUserCount = 8; // 最大ユーザー数
 let gameCode: string;
 let isMaster: boolean;
 let playerName: string;
-let players: string[] = [];
+let players: {
+    socketId: string;
+    userName: string;
+}[] = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     try {
@@ -65,7 +68,10 @@ function makeMessage(arr: MakeResponse): void {
     }
     const userNameElement = document.getElementById("userName") as HTMLInputElement;
     if (userNameElement) {
-        players.push(userNameElement.value.slice(0, maxUserNameLength)); // ユーザー名数を制限;
+        players.push({
+            socketId: arr.socketId,
+            userName: userNameElement.value.slice(0, maxUserNameLength)
+        });
         updateWaitingRoom();
     }
 }
@@ -76,18 +82,22 @@ function joinMessage(arr: JoinResponse): void {
         console.log("Add User: " + arr.userName);
         // 同じユーザー名がいたらなにもしない
         for (let i = 0; i < players.length; i++) {
-            if (players[i] === arr.userName.slice(0, maxUserNameLength)) {
+            if (players[i].userName === arr.userName.slice(0, maxUserNameLength)) {
+                // 必要であればここで sendDirectMessage で arr.socketId (プレイヤー) に向けてメッセージを送る
                 return;
             }
         }
         // ユーザー上限チェック
         if (players.length >= maxUserCount) {
             showError("ユーザーが上限に達しました: " + arr.userName.slice(0, maxUserNameLength));
-            // 必要であればここで sendMasterMessage で arr.userName (該当プレイヤー) に向けてメッセージを送る。
+            // 必要であればここで sendDirectMessage で arr.socketId (プレイヤー) に向けてメッセージを送る
             return;
         }
         // ユーザー追加
-        players.push(arr.userName.slice(0, maxUserNameLength)); // ユーザー名数を制限
+        players.push({
+            socketId: arr.socketId,
+            userName: arr.userName.slice(0, maxUserNameLength)
+        });
         updateWaitingRoom();
     } else {
         if (arr.status) {
@@ -98,9 +108,18 @@ function joinMessage(arr: JoinResponse): void {
     }
 }
 
+// room全員にメッセージを送る（送信者も含む）
 function sendMessage(params: { [key: string]: any }): void {
     socket.emit("send", {
         gameCode: gameCode,
+        ...params
+    });
+}
+
+// 送信者にメッセージを送る
+function sendDirectMessage(socketId: string, params: { [key: string]: any }): void {
+    socket.emit("send_direct", {
+        to: socketId,
         ...params
     });
 }
@@ -118,7 +137,7 @@ function updateWaitingRoom(): void {
     // 子要素追加
     players.forEach(player => {
         const li = document.createElement("li");
-        li.textContent = player;
+        li.textContent = player.userName;
         waitingRoomList.appendChild(li);
     });
 }
