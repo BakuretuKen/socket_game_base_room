@@ -8,15 +8,16 @@ Socket Game Base Roomは、Socket.IOを使用したリアルタイム多人数�
 マスター/クライアント型のアーキテクチャを採用し、1人のプレイヤー（マスター）がゲームルームを作成し、他のプレイヤーが8桁のゲームコードを使って参加する仕組みになっています。
 
 同じゲームに接続したあとは、`sendMessage()`関数でプレイヤー全員にメッセージを送信できます。Socket.IOのroom機能を利用しています。<br />
-開発者はユーザー名のみでユーザーを判断し、Socket IDを意識せずに通信ゲーム開発ができます。
+また、`sendDirectMessage()`関数で特定のプレイヤーにダイレクトメッセージも送信可能です。<br />
+開発者はユーザー名とSocket IDでプレイヤーを管理し、柔軟な通信ゲーム開発ができます。
 
 ## 特徴
 
 - **リアルタイム通信**: Socket.IOによる双方向通信
-- **ルーム型システム**: 8桁ゲームコードによるルーム管理
-- **TypeScript完全対応**: 型安全な開発環境
-- **自動クリーンアップ**: 300秒後の自動ルーム削除
-- **プレイヤー管理**: 最大8名のプレイヤー制限
+- **ルーム型システム**: 8桁ゲームコード（重複チェック機能付き）によるルーム管理
+- **自動クリーンアップ**: 指定秒後の自動ルーム削除
+- **プレイヤー管理**: 指定人数プレイヤー制限（Socket ID付きプレイヤー管理）
+- **ダイレクトメッセージ**: 特定プレイヤーへの個別メッセージ送信
 - **簡単セットアップ**: Makefileによる開発環境構築
 
 ## 必要環境
@@ -30,8 +31,6 @@ Socket Game Base Roomは、Socket.IOを使用したリアルタイム多人数�
 ```bash
 # 依存関係をインストール
 make init
-# または
-npm install
 ```
 
 ## 開発
@@ -41,8 +40,6 @@ npm install
 ```bash
 # TypeScript開発サーバー（ホットリロード）
 make dev
-# または
-npm run dev
 ```
 
 ウォッチモード
@@ -50,8 +47,6 @@ npm run dev
 ```bash
 # ファイル変更監視でコンパイル
 make watch
-# または
-npm run watch
 ```
 
 ### ビルド・本番実行
@@ -117,7 +112,7 @@ npm start
 
 **共通ロジック（game_base.ts）**:
 - Socket.IO接続・切断処理
-- プレイヤー管理（最大8名制限）
+- プレイヤー管理
 - メッセージ送受信ヘルパー関数
 - 待機室UI更新
 
@@ -154,19 +149,27 @@ socket_game_base_room/
 interface MakeResponse {
     status: boolean;
     gameCode: string;
+    socketId: string;
 }
 
 // ルーム参加レスポンス
 interface JoinResponse {
     status: boolean;
     userName: string;
+    socketId: string;
 }
 
 // メッセージ送受信
 interface RecvMessage {
     status: boolean;
+    socketId: string;
     action?: string;
-    [key: string]: any;
+    [key: string]: any; // 任意のデータ
+}
+
+// ブラウザ用のWindowインターフェース拡張
+interface Window {
+    receiveMessage: (arr: RecvMessage) => void;
 }
 ```
 
@@ -175,6 +178,9 @@ interface RecvMessage {
 ```typescript
 // ルーム内メッセージ送信
 function sendMessage(params: { [key: string]: any }): void
+
+// 特定のユーザーへのダイレクトメッセージ送信
+function sendDirectMessage(socketId: string, params: { [key: string]: any }): void
 
 // メッセージ受信処理（要実装）
 window.receiveMessage = function(arr: RecvMessage): void {
@@ -190,17 +196,12 @@ window.receiveMessage = function(arr: RecvMessage): void {
 ### 環境変数
 - `PORT` - サーバーポート（デフォルト: 8000）
 
-### システム制限
+### システム制限（変更可能）
 - **ゲームコード保持期間**: 300秒（5分）
 - **クリーンアップ間隔**: 120秒（2分）
 - **最大プレイヤー数**: 8名
 - **ユーザー名最大長**: 8文字
 - **データ永続化**: なし（メモリ上のみ）
-
-### セキュリティ
-- パラメータ検証機能内蔵
-- 不正なゲームコードでの参加拒否
-- 同名ユーザー参加拒否
 
 ## 開発ワークフロー
 
