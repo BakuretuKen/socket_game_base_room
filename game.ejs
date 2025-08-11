@@ -32,6 +32,13 @@
         <div id="waitingRoom">
             <h3>待機ルーム</h3>
             <ol id="waitingRoomList"></ol>
+            <% if (master == "1") { %>
+                <button onclick="sendMessage({action: 'START_GAME'});" style="width: 30%;">ゲーム開始</button>
+            <% } %>
+        </div>
+        <!-- ゲーム画面 -->
+        <div id="gameScreen" style="display: none;">
+            <h3>ゲーム画面</h3>
         </div>
 
         <hr/>
