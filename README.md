@@ -4,6 +4,8 @@
 
 ## 概要
 
+[ブラウザで「ワンナイト人狼」](https://oj.bakuretuken.com/)（現在は終了）で使用していたプレイヤー間の通信部分を Socket.IO room機能で作り直したプログラムです。<br />
+
 Socket Game Base Roomは、Socket.IOを使用したリアルタイム多人数参加型ゲームを構築するためのベースプログラムです。 <br />
 マスター/クライアント型のアーキテクチャを採用し、1人のプレイヤー（マスター）がゲームルームを作成し、他のプレイヤーが8桁のゲームコードを使って参加する仕組みになっています。
 
@@ -223,7 +225,7 @@ window.receiveMessage = function(arr: RecvMessage): void {
 1. `make dev` で開発サーバー起動。`make watch`でウォッチモードON
 2. TypeScriptファイル編集（自動再コンパイル）
 3. ブラウザでテスト（http://localhost:8000）
-4. `make build` で本番用ビルド。index.html等の配置は必要
+4. `make build` で本番用ビルド。その際はindex.html等の配置は必要
 
 ## ライセンス
 
