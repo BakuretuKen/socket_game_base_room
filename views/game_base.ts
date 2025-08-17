@@ -102,6 +102,7 @@ function joinMessage(arr: JoinResponse): void {
     } else {
         if (arr.status) {
             showMessage('ゲーム開始までお待ちください。');
+            console.log("Master Socket ID: " + arr.masterId); // 必要であれば保持する
         } else {
             showError("ゲームが見つかりません。");
         }

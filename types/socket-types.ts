@@ -14,6 +14,7 @@ declare global {
         status: boolean;
         userName: string;
         socketId: string;
+        masterId: string;
     }
 
     interface RecvMessage {

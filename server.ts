@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 const port = process.env.PORT || 8000;
 
 // ------ グローバル変数 ------
-const roomList: { [roomCode: string]: number } = {};
+const roomList: { [roomCode: string]: { socketId: string, time: number } } = {};
 
 const KEEP_ROOM_CODE_SEC = 300; // ルームコード保持期間(秒)
 const CLEAR_INTERVAL_SEC = 120; // 変数定期クリアインターバル(秒)
@@ -22,10 +22,10 @@ const CLEAR_INTERVAL_SEC = 120; // 変数定期クリアインターバル(秒)
 setInterval(() => {
     const nowUnixTime = Math.floor((new Date()).getTime() / 1000);
     for (const roomCode in roomList) {
-        if (roomList[roomCode] + KEEP_ROOM_CODE_SEC > nowUnixTime) {
+        if (roomList[roomCode].time + KEEP_ROOM_CODE_SEC > nowUnixTime) {
             continue;
         }
-        console.log("Room Delete [" + roomCode + "] " + roomList[roomCode]);
+        console.log("Room Delete [" + roomCode + "] " + roomList[roomCode].socketId + " " + roomList[roomCode].time);
         delete roomList[roomCode];
     }
 }, CLEAR_INTERVAL_SEC * 1000);
@@ -98,7 +98,7 @@ interface SendRequest {
 io.on('connection', (socket) => {
     // ゲームルーム作成
     // @params {}
-    // @return 送信者: make { "status": true, "gameCode": "ゲームCODE" }
+    // @return 送信者: make { "status": true, "gameCode": "ゲームCODE", "socketId": 送信者ソケットID }
     socket.on('make', () => {
         for (let i = 0; i < 10; i++) {
             // ランダムな数字8桁作成
@@ -108,7 +108,10 @@ io.on('connection', (socket) => {
             if (typeof roomList[gameCode] === "undefined") {
                 // Socket Room 入室
                 socket.join(gameCode);
-                roomList[gameCode] = Math.floor((new Date()).getTime() / 1000);
+                roomList[gameCode] = {
+                    socketId: socket.id,
+                    time: Math.floor((new Date()).getTime() / 1000)
+                };
                 // 送信元への通知
                 const response: MakeResponse = { "status": true, "gameCode": gameCode, "socketId": socket.id };
                 io.to(socket.id).emit('make', response);
@@ -123,15 +126,15 @@ io.on('connection', (socket) => {
 
     // ゲーム接続
     // @params { gameCode: ゲームCODE, userName: ユーザー名 }
-    // @return 全員: join { "status": true, "gameCode": "ゲームCODE", "userName": "ユーザー名" }
+    // @return 全員: join { "status": true, "gameCode": "ゲームCODE", "userName": "ユーザー名", "socketId": 送信者ソケットID, "masterId": マスターソケットID }
     socket.on('join', (arr: JoinSocketRequest) => {
         if (typeof arr["gameCode"] === "undefined" || typeof arr["userName"] === "undefined") {
-            const errorResponse: JoinResponse = { "status": false, "userName": "", "socketId": socket.id };
+            const errorResponse: JoinResponse = { "status": false, "userName": "", "socketId": "", masterId: "" };
             io.to(socket.id).emit("join", errorResponse);
             return;
         }
         if (typeof roomList[arr["gameCode"]] === "undefined") {
-            const errorResponse: JoinResponse = { "status": false, "userName": "", "socketId": socket.id };
+            const errorResponse: JoinResponse = { "status": false, "userName": "", "socketId": "", masterId: "" };
             io.to(socket.id).emit("join", errorResponse);
             return;
         }
@@ -140,14 +143,14 @@ io.on('connection', (socket) => {
         // Socket Room 入室
         socket.join(gameCode);
         // ROOM全員に通知
-        const masterResponse: JoinResponse = { "status": true, "userName": arr["userName"], "socketId": socket.id };
+        const masterResponse: JoinResponse = { "status": true, "userName": arr["userName"], "socketId": socket.id, masterId: roomList[gameCode].socketId };
         io.to(gameCode).emit('join', masterResponse);
         console.log("join: " + gameCode + " by " + socket.id);
     });
 
     // メッセージ送信
     // @params { to: 送信先ソケットID, action: アクション(オプション), ・・・ }
-    // @return 全員: recv　{ "status": true, "action": アクション(オプション), ・・・ }
+    // @return 全員: recv　{ "status": true, "action": アクション(オプション), ・・・, "socketId": 送信者ソケットID }
     socket.on('send', (arr: SendRequest) => {
         if (typeof arr["gameCode"] === "undefined") {
             const errorResponse: RecvMessage = { "status": false, "action": "GAME CODE ERROR", "socketId": socket.id };
