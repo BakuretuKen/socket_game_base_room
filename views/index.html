@@ -4,52 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Base - ゲームルーム管理</title>
-    <link rel="stylesheet" href="/dist/simple.min.css">
+    <link rel="stylesheet" href="/style.css">
     <meta name="robots" content="noindex,nofollow">
-    <style>
-        /* PC表示でも要素を縦並びにする */
-        main {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            max-width: 100%;
-        }
-
-        section {
-            width: 100% !important;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        /* フォーム要素を縦並びに */
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        /* ボタンの幅を調整 */
-        input[type="submit"] {
-            width: 100%;
-            max-width: 200px;
-            margin: 0 auto;
-        }
-
-        /* 見出しのマージンを調整 */
-        h2 {
-            margin-top: 0;
-            margin-bottom: 0.5rem;
-        }
-
-        /* ヘッダーとフッターのマージンを調整 */
-        header {
-            margin-bottom: 1rem;
-        }
-
-        footer {
-            margin-top: 1rem;
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -59,21 +15,21 @@
     <main>
         <section>
             <h3>ゲームを作成</h3>
-            <form action="/new" method="post">
+            <form action="/new" method="post" autocomplete="off">
                 <label for="newUserName">ユーザー名</label>
-                <input type="text" id="newUserName" name="userName" placeholder="ユーザー名を入力" required maxlength="8">
-                <input type="submit" value="ゲーム作成">
+                <input type="text" id="newUserName" name="userName" placeholder="ユーザー名を入力" required maxlength="8" autocomplete="off">
+                <input type="submit" value="ゲーム作成" class="secondary">
             </form>
         </section>
 
         <section>
             <h3>ゲームに参加</h3>
-            <form action="/join" method="post">
+            <form action="/join" method="post" autocomplete="off">
                 <label for="gameCode">ゲームコード</label>
-                <input type="text" id="gameCode" name="gameCode" placeholder="ゲームコードを入力" required maxlength="8">
+                <input type="text" id="gameCode" name="gameCode" placeholder="ゲームコードを入力" required maxlength="6" autocomplete="off">
 
                 <label for="joinUserName">ユーザー名</label>
-                <input type="text" id="joinUserName" name="userName" placeholder="ユーザー名を入力" required maxlength="8">
+                <input type="text" id="joinUserName" name="userName" placeholder="ユーザー名を入力" required maxlength="8" autocomplete="off">
 
                 <input type="submit" value="ゲーム参加">
             </form>
@@ -83,5 +39,40 @@
     <footer>
         <p><small>Game Base System</small></p>
     </footer>
+
+    <script>
+        // テキスト入力中の Enter キーによるフォーム送信を無効化（ボタン押下でのみ遷移）
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.matches('input[type="text"]')) {
+                e.preventDefault();
+            }
+        });
+
+        // URL 末尾にゲームコードが付与されていたら（例: /PRJWSG）バリデーション後に初期値として設定
+        var gameCodeMatch = location.pathname.match(/^\/([A-Za-z0-9]{6})$/);
+        if (gameCodeMatch) {
+            document.getElementById('gameCode').value = gameCodeMatch[1].toUpperCase();
+        }
+
+        // ユーザー名を localStorage に保存・復元
+        var USER_NAME_KEY = 'gameBaseUserName';
+
+        // 保存済みのユーザー名があれば初期値に設定
+        var savedUserName = localStorage.getItem(USER_NAME_KEY);
+        if (savedUserName) {
+            document.getElementById('newUserName').value = savedUserName;
+            document.getElementById('joinUserName').value = savedUserName;
+        }
+
+        // 送信時に入力されたユーザー名を保存
+        document.querySelectorAll('form').forEach(function(form) {
+            form.addEventListener('submit', function() {
+                var nameInput = form.querySelector('input[name="userName"]');
+                if (nameInput && nameInput.value) {
+                    localStorage.setItem(USER_NAME_KEY, nameInput.value);
+                }
+            });
+        });
+    </script>
 </body>
 </html>

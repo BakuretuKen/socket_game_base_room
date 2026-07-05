@@ -2,11 +2,13 @@
 (function() {
     window.receiveMessage = function(arr: RecvMessage): void {
         console.log("recv(player):", arr);
+        debugLog("recv(player):", arr);
         switch (arr.action) {
             case "START_GAME":
                 hideMessages();
                 document.getElementById("waitingRoom")!.style.display = "none";
                 document.getElementById("gameScreen")!.style.display = "block";
+                document.getElementById("debugArea")!.style.display = "block";
                 break;
         }
     };

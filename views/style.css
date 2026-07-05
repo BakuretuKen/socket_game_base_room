@@ -1,0 +1,348 @@
+/* ==========================================================
+ * Game Base 共通スタイル
+ * index.html / game.ejs から読み込む
+ * ========================================================== */
+
+:root {
+    --bg: #1b1e2b;            /* 画面背景 */
+    --bg-panel: #252a3a;      /* パネル背景 */
+    --bg-inset: #1f2331;      /* パネル内の凹み背景 */
+    --border: #3a4157;
+    --text: #e6e9f2;
+    --text-sub: #9aa3b8;
+    --accent: #4e8cff;
+    --accent-hover: #6ba0ff;
+    --btn-secondary: #6b5d24;
+    --btn-secondary-hover: #7d6e2d;
+    --btn-secondary-border: #8a7b3a;
+    --btn-secondary-text: #f2ecd4;
+    --success-bg: #1e3328;
+    --success-border: #3f7a58;
+    --success-text: #9fdcb6;
+    --error-bg: #382226;
+    --error-border: #a05561;
+    --error-text: #f0a8b1;
+    --radius: 8px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI",
+        "Meiryo", system-ui, sans-serif;
+    line-height: 1.6;
+}
+
+/* ---------- ヘッダー / フッター ---------- */
+
+header {
+    padding: 1.2rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    letter-spacing: 0.35em;
+    text-indent: 0.35em; /* letter-spacing の右余白を相殺して中央に */
+    color: var(--text);
+}
+
+footer {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-sub);
+}
+
+/* ---------- メインレイアウト ---------- */
+
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+}
+
+/* ---------- パネル（カード） ---------- */
+
+section,
+#waitingRoom,
+#gameScreen {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.4rem;
+}
+
+h3 {
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    font-size: 1.05rem;
+    letter-spacing: 0.1em;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+
+/* ---------- フォーム ---------- */
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+label {
+    font-size: 0.85rem;
+    color: var(--text-sub);
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    font-size: 1rem;
+    color: var(--text);
+    background: var(--bg-inset);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    outline: none;
+}
+
+input[type="text"]:focus {
+    border-color: var(--accent);
+}
+
+input[type="text"]::placeholder {
+    color: var(--text-sub);
+    opacity: 0.6;
+}
+
+/* ゲームコード入力は大文字で表示（送信時にも大文字へ正規化される） */
+#gameCode {
+    text-transform: uppercase;
+}
+
+/* ---------- ボタン ---------- */
+
+button,
+input[type="submit"] {
+    padding: 0.65rem 1.2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+button:hover,
+input[type="submit"]:hover {
+    background: var(--accent-hover);
+}
+
+button:active,
+input[type="submit"]:active {
+    transform: translateY(1px);
+}
+
+input[type="submit"] {
+    width: 100%;
+    max-width: 220px;
+    margin: 0.6rem auto 0;
+}
+
+/* 控えめなセカンダリボタン（ゲーム作成など） */
+button.secondary,
+input[type="submit"].secondary {
+    color: var(--btn-secondary-text);
+    background: var(--btn-secondary);
+    border: 1px solid var(--btn-secondary-border);
+}
+
+button.secondary:hover,
+input[type="submit"].secondary:hover {
+    background: var(--btn-secondary-hover);
+}
+
+/* ---------- メッセージ表示 ---------- */
+
+#message {
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--success-border);
+    border-radius: var(--radius);
+    background: var(--success-bg);
+    color: var(--success-text);
+}
+
+#errorMessage {
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--error-border);
+    border-radius: var(--radius);
+    background: var(--error-bg);
+    color: var(--error-text);
+}
+
+/* ---------- ゲームコードパネル（クリックでコピー） ---------- */
+
+#gameCodePanel {
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+    padding: 0.7rem 1rem;
+    background: var(--bg-inset);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    user-select: none;
+}
+
+#gameCodePanel .label {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--text-sub);
+}
+
+#gameCodeValue {
+    font-family: "SF Mono", "Consolas", "Menlo", monospace;
+    font-size: 1.4rem;
+    font-weight: bold;
+    letter-spacing: 0.25em;
+    color: var(--text);
+}
+
+#gameCodePanel:hover {
+    border-color: var(--accent);
+}
+
+/* コピー時に背景を光らせる */
+#gameCodePanel.copied {
+    animation: copy-flash 0.6s ease-out;
+}
+
+@keyframes copy-flash {
+    0% {
+        background: var(--accent);
+        border-color: var(--accent-hover);
+    }
+    100% {
+        background: var(--bg-inset);
+        border-color: var(--border);
+    }
+}
+
+/* ---------- トップページへ戻る ---------- */
+
+#backToTop {
+    text-align: center;
+}
+
+/* ---------- 待機ルーム ---------- */
+
+#waitingRoomList {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    counter-reset: player;
+}
+
+#waitingRoomList li {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.5rem 0.8rem;
+    margin-bottom: 0.4rem;
+    background: var(--bg-inset);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    counter-increment: player;
+}
+
+#waitingRoomList li::before {
+    content: counter(player);
+    flex-shrink: 0;
+    width: 1.6rem;
+    height: 1.6rem;
+    line-height: 1.6rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+}
+
+#waitingRoom button {
+    display: block;
+    width: 100%;
+    max-width: 220px;
+    margin: 0 auto;
+}
+
+/* ---------- デバッグ ---------- */
+
+hr {
+    max-width: 520px;
+    margin: 0 auto;
+    border: none;
+    border-top: 1px solid var(--border);
+}
+
+#debugButtons {
+    max-width: 520px;
+    margin: 1rem auto;
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-sub);
+    background: var(--bg-inset);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+}
+
+#debugButtons button {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+    font-weight: normal;
+    color: var(--text-sub);
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+}
+
+#debugButtons button:hover {
+    color: var(--text);
+    border-color: var(--text-sub);
+}
+
+#debugButtons input[type="text"] {
+    width: auto;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+    margin: 0.2rem 0;
+}
+
+#debugLog {
+    display: block;
+    width: 100%;
+    height: 8rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    font-family: monospace;
+    color: var(--text-sub);
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    box-sizing: border-box;
+}

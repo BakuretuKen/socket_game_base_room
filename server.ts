@@ -19,6 +19,17 @@ const roomList: { [roomCode: string]: { socketId: string, time: number } } = {};
 const KEEP_ROOM_CODE_SEC = 300; // ルームコード保持期間(秒)
 const CLEAR_INTERVAL_SEC = 120; // 変数定期クリアインターバル(秒)
 
+const GAME_CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // ゲームコード使用文字（大文字英字 + 数字）
+const GAME_CODE_LENGTH = 6; // ゲームコード桁数
+
+function generateGameCode(): string {
+    let code = '';
+    for (let i = 0; i < GAME_CODE_LENGTH; i++) {
+        code += GAME_CODE_CHARS[Math.floor(Math.random() * GAME_CODE_CHARS.length)];
+    }
+    return code;
+}
+
 setInterval(() => {
     const nowUnixTime = Math.floor((new Date()).getTime() / 1000);
     for (const roomCode in roomList) {
@@ -46,6 +57,15 @@ app.use('/', express.static(__dirname + '/views'));
 app.use('/dist', express.static(__dirname + '/dist'));
 
 app.get('/', (req: Request, res: Response) => {
+    res.sendFile(__dirname + '/views/index.html');
+});
+
+// ゲームコード付きURL（例: /PRJWSG）でもトップページを表示（コードは index.html 側で初期値に設定）
+app.get('/:gameCode', (req: Request, res: Response, next) => {
+    if (!/^[A-Za-z0-9]{6}$/.test(req.params.gameCode)) {
+        next(); // 形式不正は 404 へ
+        return;
+    }
     res.sendFile(__dirname + '/views/index.html');
 });
 
@@ -87,6 +107,10 @@ interface JoinSocketRequest {
     userName: string;
 }
 
+interface DeleteCodeRequest {
+    gameCode: string;
+}
+
 interface SendRequest {
     to: string;
     action?: string;
@@ -101,10 +125,8 @@ io.on('connection', (socket) => {
     // @return 送信者: make { "status": true, "gameCode": "ゲームCODE", "socketId": 送信者ソケットID }
     socket.on('make', () => {
         for (let i = 0; i < 10; i++) {
-            // ランダムな数字8桁作成
-            let gameCode = Math.floor(Math.random() * 1000000).toString().padStart(8, '0');
-            // ランダムな英数字8桁作成
-            // let gameCode = Math.random().toString(36).substring(2, 10).replace(/[1l]/g, '7') // 1とlを7に置換
+            // ランダムな英数字6桁作成（大文字英字 + 数字）
+            let gameCode = generateGameCode();
             if (typeof roomList[gameCode] === "undefined") {
                 // Socket Room 入室
                 socket.join(gameCode);
@@ -146,6 +168,21 @@ io.on('connection', (socket) => {
         const masterResponse: JoinResponse = { "status": true, "userName": arr["userName"], "socketId": socket.id, masterId: roomList[gameCode].socketId };
         io.to(gameCode).emit('join', masterResponse);
         console.log("join: " + gameCode + " by " + socket.id);
+    });
+
+    // ゲームコード削除（ゲーム開始時にマスターから呼び出し、以降の新規参加を締め切る）
+    // @params { gameCode: ゲームCODE }
+    socket.on('delete_code', (arr: DeleteCodeRequest) => {
+        if (typeof arr["gameCode"] === "undefined") {
+            return;
+        }
+        const gameCode = arr["gameCode"];
+        // マスター（ルーム作成者）以外からの削除は受け付けない
+        if (typeof roomList[gameCode] === "undefined" || roomList[gameCode].socketId !== socket.id) {
+            return;
+        }
+        delete roomList[gameCode];
+        console.log("delete_code: " + gameCode + " by " + socket.id);
     });
 
     // メッセージ送信
