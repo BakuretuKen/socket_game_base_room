@@ -5,7 +5,11 @@
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
+import path from 'path';
 import './types/socket-types';
+
+// ビルド後は __dirname が dist を指すため、その場合は1つ上をプロジェクトルートとする
+const BASE_DIR = path.basename(__dirname) === 'dist' ? path.join(__dirname, '..') : __dirname;
 
 const app = express();
 app.use(express.json());
@@ -53,11 +57,11 @@ server.listen(port, () => {
 app.set('view engine', 'ejs');
 
 // CSS、JS 静的ファイル読み込み設定
-app.use('/', express.static(__dirname + '/views'));
-app.use('/dist', express.static(__dirname + '/dist'));
+app.use('/', express.static(path.join(BASE_DIR, 'views')));
+app.use('/dist', express.static(path.join(BASE_DIR, 'dist')));
 
 app.get('/', (req: Request, res: Response) => {
-    res.sendFile(__dirname + '/views/index.html');
+    res.sendFile(path.join(BASE_DIR, 'views/index.html'));
 });
 
 // ゲームコード付きURL（例: /PRJWSG）でもトップページを表示（コードは index.html 側で初期値に設定）
@@ -66,7 +70,7 @@ app.get('/:gameCode', (req: Request, res: Response, next) => {
         next(); // 形式不正は 404 へ
         return;
     }
-    res.sendFile(__dirname + '/views/index.html');
+    res.sendFile(path.join(BASE_DIR, 'views/index.html'));
 });
 
 interface NewGameRequest {
@@ -85,7 +89,7 @@ app.post('/new', (req: Request, res: Response) => {
         res.end('400 BAD REQUEST');
         return;
     }
-    res.render(__dirname + '/game', { userName: userName, gameCode: 'new', master: '1' });
+    res.render(path.join(BASE_DIR, 'game'), { userName: userName, gameCode: 'new', master: '1' });
 });
 
 app.post('/join', (req: Request, res: Response) => {
@@ -95,7 +99,7 @@ app.post('/join', (req: Request, res: Response) => {
         res.end('400 BAD REQUEST');
         return;
     }
-    res.render(__dirname + '/game', { userName: userName, gameCode: gameCode, master: '0' });
+    res.render(path.join(BASE_DIR, 'game'), { userName: userName, gameCode: gameCode, master: '0' });
 });
 
 app.use((req: Request, res: Response) => {
