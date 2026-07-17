@@ -17,6 +17,12 @@ Socket Game Base Roomは、Socket.IOを使用したリアルタイム多人数�
 
 https://bakuretuken.com/socket_game_base/
 
+### ライブデモ (Live Demo)
+
+公開プログラムがそのまま動いています
+
+https://socketgamecode.fly.dev/
+
 ## 特徴
 
 - **リアルタイム通信**: Socket.IOによる双方向通信
@@ -43,6 +49,9 @@ https://bakuretuken.com/socket_game_base/
 ```bash
 # 依存関係をインストール
 make init
+
+# ビルド（distディレクトリ作成）
+make build
 ```
 
 ## 開発
