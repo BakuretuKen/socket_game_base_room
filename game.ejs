@@ -33,7 +33,7 @@
             <% } %>
             <ol id="waitingRoomList"></ol>
             <% if (master == "1") { %>
-                <button onclick="sendMessage({action: 'START_GAME'});">ゲーム開始</button>
+                <button id="startGameButton" disabled onclick="sendMessage({action: 'START_GAME'});">ゲーム開始</button>
             <% } %>
         </div>
         <!-- ゲーム画面 -->

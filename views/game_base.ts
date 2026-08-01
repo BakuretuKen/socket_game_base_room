@@ -5,7 +5,8 @@ declare const io: any;
 // Socket.IO接続
 const socket = io();
 const maxUserNameLength = 8; // ユーザー名最大文字数
-const maxUserCount = 8; // 最大ユーザー数
+const minUserCount = 3; // ゲーム開始に必要な最小ユーザー数
+const maxUserCount = 7; // 最大ユーザー数
 let gameCode: string;
 let isMaster: boolean;
 let playerName: string;
@@ -254,6 +255,17 @@ function updateWaitingRoom(): void {
         li.textContent = player.userName;
         waitingRoomList.appendChild(li);
     });
+    updateStartGameButton();
+}
+
+// 3〜7名のときだけ「ゲーム開始」を有効化（マスターのみ）
+function updateStartGameButton(): void {
+    const startButton = document.getElementById("startGameButton") as HTMLButtonElement | null;
+    if (!startButton) {
+        return;
+    }
+    const count = players.length;
+    startButton.disabled = count < minUserCount || count > maxUserCount;
 }
 
 // メッセージ表示
