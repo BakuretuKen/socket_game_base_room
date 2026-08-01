@@ -2,6 +2,10 @@
 
 リアルタイム多人数参加型ゲーム開発のためのTypeScript基盤（Socket.IO Room使用）
 
+## ゲームの作り方サンプル 01
+
+![](images/sample01.png)
+
 ## 概要
 
 [ブラウザで「ワンナイト人狼」](https://oj.bakuretuken.com/)（現在は終了）で使用していたプレイヤー間の通信部分を Socket.IO room機能で作り直したプログラムです。<br />
