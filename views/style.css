@@ -305,6 +305,50 @@ input[type="submit"].secondary:hover {
     margin: 0 auto;
 }
 
+/* ---------- ゲーム画面：カード ---------- */
+
+.card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.2rem;
+    height: 4.4rem;
+    font-size: 2.2rem;
+    line-height: 1;
+    background: var(--bg-inset);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    user-select: none;
+}
+
+/* 予備カード：上部に2枚横並び */
+.spare-cards {
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 1.2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* プレイヤーカード：縦並び */
+.player-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.player-card-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.player-card-row .player-name {
+    font-size: 1rem;
+    color: var(--text);
+}
+
 /* ---------- デバッグ ---------- */
 
 hr {

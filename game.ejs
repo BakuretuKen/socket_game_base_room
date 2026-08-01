@@ -33,12 +33,16 @@
             <% } %>
             <ol id="waitingRoomList"></ol>
             <% if (master == "1") { %>
-                <button id="startGameButton" disabled onclick="sendMessage({action: 'START_GAME'});">ゲーム開始</button>
+                <button id="startGameButton" disabled onclick="startGame();">ゲーム開始</button>
             <% } %>
         </div>
         <!-- ゲーム画面 -->
         <div id="gameScreen" style="display: none;">
             <h3>ゲーム画面</h3>
+            <!-- 予備カード（2枚横並び） -->
+            <div id="spareCardsArea" class="spare-cards"></div>
+            <!-- プレイヤーカード（縦並び・右に名前） -->
+            <div id="playerCardsArea" class="player-cards"></div>
         </div>
 
         <!-- デバッグ用（ゲーム開始後にのみ表示） -->
@@ -47,6 +51,8 @@
             <div id="debugButtons">
                 DEBUG：
                 <button class="debug" onclick="console.log(players); debugLog('players:', players);">players</button>
+                <button class="debug" onclick="console.log(spareCards); debugLog('spareCards:', spareCards);">spareCards</button>
+                <button class="debug" onclick="console.log(player); debugLog('player:', player);">player</button>
                 <button class="debug" onclick="console.log(playerName); debugLog('playerName:', playerName);">playerName</button>
                 <button class="debug" onclick="console.log(isMaster); debugLog('isMaster:', isMaster);">isMaster</button>
                 | <input type="text" id="debugMessage" value="debug message" autocomplete="off"> <button class="debug" onclick="sendMessage({action: 'SEND_DEBUG', message: document.getElementById('debugMessage').value});">send_all</button>

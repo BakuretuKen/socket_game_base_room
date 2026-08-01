@@ -7,13 +7,37 @@ const socket = io();
 const maxUserNameLength = 8; // ユーザー名最大文字数
 const minUserCount = 3; // ゲーム開始に必要な最小ユーザー数
 const maxUserCount = 7; // 最大ユーザー数
+
+// 役職定義（全プレイヤー共通） key=役職ID
+const roles: { [key: number]: { name: string; code: string } } = {
+    0: { name: "村人", code: "citizen" },
+    1: { name: "占い師", code: "seer" },
+    2: { name: "怪盗", code: "thief" },
+    10: { name: "人狼", code: "werewolf" },
+};
+
+// 人数別の役職デッキ（プレイヤー数 + 予備2枚）
+const roleDecks: { [playerCount: number]: number[] } = {
+    3: [0, 1, 2, 10, 10],             // 村人、占い師、怪盗、人狼、人狼
+    4: [0, 0, 1, 2, 10, 10],          // 村人×2、占い師、怪盗、人狼×2
+    5: [0, 0, 0, 1, 2, 10, 10],       // 村人×3、占い師、怪盗、人狼×2
+    6: [0, 0, 0, 0, 1, 2, 10, 10],    // 村人×4、占い師、怪盗、人狼×2
+    7: [0, 0, 0, 0, 1, 2, 10, 10, 10], // 村人×4、占い師、怪盗、人狼×3
+};
+
 let gameCode: string;
 let isMaster: boolean;
 let playerName: string;
+let player: {
+    roleId?: number; // 自分に配られた役職ID
+    playerIndex?: number; // players 配列内の自分の番号
+} = {};
 let players: {
     socketId: string;
     userName: string;
+    roleId?: number; // 配布された役職ID（ゲーム開始後・マスターが保持）
 }[] = [];
+let spareCards: number[] = []; // 予備カード2枚（順番付き・マスターが保持）
 
 document.addEventListener('DOMContentLoaded', function() {
     // POST /new・/join で遷移してきてもアドレスバーの URL は / のままにする
@@ -223,6 +247,19 @@ function flashGameCodePanel(): void {
     panel.classList.add("copied");
 }
 
+// ゲーム開始（マスター用・roleId を除いた players を全員に送る）
+function startGame(): void {
+    sendMessage({
+        action: "START_GAME",
+        players: players.map(function(p) {
+            return {
+                socketId: p.socketId,
+                userName: p.userName
+            };
+        })
+    });
+}
+
 // room全員にメッセージを送る（送信者も含む）
 function sendMessage(params: { [key: string]: any }): void {
     socket.emit("send", {
@@ -266,6 +303,48 @@ function updateStartGameButton(): void {
     }
     const count = players.length;
     startButton.disabled = count < minUserCount || count > maxUserCount;
+}
+
+// ゲーム画面にカードを裏面で表示（予備2枚＋プレイヤー分）
+function showGameCards(): void {
+    const spareArea = document.getElementById("spareCardsArea");
+    const playerArea = document.getElementById("playerCardsArea");
+    if (!spareArea || !playerArea) {
+        return;
+    }
+
+    // 予備カード2枚を横並び
+    spareArea.innerHTML = "";
+    for (let i = 0; i < 2; i++) {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.textContent = "🂠";
+        spareArea.appendChild(card);
+    }
+
+    // プレイヤー分のカードを縦並び（右に名前・自分のみ役職も表示）
+    playerArea.innerHTML = "";
+    players.forEach(function(p, index) {
+        const row = document.createElement("div");
+        row.className = "player-card-row";
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.textContent = "🂠";
+
+        const name = document.createElement("span");
+        name.className = "player-name";
+        let nameText = p.userName;
+        // 自分のカードのみ役職を名前の右に表示
+        if (player.playerIndex === index && player.roleId !== undefined && roles[player.roleId]) {
+            nameText += "（" + roles[player.roleId].name + "）";
+        }
+        name.textContent = nameText;
+
+        row.appendChild(card);
+        row.appendChild(name);
+        playerArea.appendChild(row);
+    });
 }
 
 // メッセージ表示
